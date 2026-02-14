@@ -30,6 +30,7 @@ local springshaker_test = springshaker.new(4, Vector3.new(4,1,1), Vector3.new(0.
 
 springshaker:ShakeOnce(springshaker_test, 2)
 ```
+This code will pull out a small explosion / vibration feeling on your camera.
 
 ## For nerds
 1. Magnitude (number) (scalable to amplitude)
@@ -52,3 +53,6 @@ Defines the maximum rotational offset (in Degrees) the camera can tilt.
 The "Release" of the shake. When the shake is told to stop (or its duration ends), it will take this many seconds to smoothly return the camera to its original position. This prevents the camera from "snapping" back instantly, which causes motion sickness.
 8. __RenderPriority (Enum.RenderPriority)
 Determines when the CFrame is applied during the RunService cycle. By default, this is set to Camera, ensuring the shake is applied after the game's default camera scripts but before the frame is rendered to the screen.
+
+## Small notes (FOR BEGINNERS!)
+**This module cannot be used on SERVER. Therefore, you either run this by using [Remotes](https://create.roblox.com/docs/reference/engine/classes/RemoteEvent), if you want to connect it to CLIENTS.**
