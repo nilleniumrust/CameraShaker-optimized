@@ -1,20 +1,27 @@
+--!strict
+--!native
+
 local BuiltIn = {}
 
 export type  __camShakePreset = {
 	Magnitude: number, 
 	Roughness: number, 
 	FadeInTime: number, 
+	Tension: number, 
+	Damping: number, 
+	Velocity: number,
 	FadeOutTime: number, 
-	__RenderName: string, 
+	RotationInfluence: Vector3,
 	__RenderPriority: Enum.RenderPriority,
-	__CFCallback: CFrame,
-	__Callback: () -> (),
 }
 
 
 export type Constants = {
 	Magnitude: (number) -> number;
-	Roughness: (number) -> number
+	Roughness: (number) -> number;
+	Tension: (number) -> number;
+	Damping: (number) -> number;
+	Velocity: (number) -> number
 }
 
 local __camShakeStates = {
@@ -31,7 +38,10 @@ local __camShakePresetConfiguration = {
 	MAGNITUDE = "Magnitude",
 	ROUGHNESS = "Roughness",
 	FADEOUTTIME = "FadeOutTime",
-	FADEINTIME = "FadeInTime"
+	FADEINTIME = "FadeInTime",
+	VELOCITY = "Velocity",
+	DAMPING = "Damping",
+	TENSION = "Tension"
 }
 
 
