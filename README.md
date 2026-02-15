@@ -5,13 +5,13 @@ Sleitnick's camerashaker but more optimized and secure. (work in progress for no
 **For test purposes, it is still in work in progress. It works similarly like RbxCameraShaker, from sleitnick.** 
 We know that 
 springshaker.new()'s parameters are 
-	Magnitude: number, 
-	Roughness: number, 
-	FadeInTime: number, 
-	FadeOutTime: number, 
-  PosInflux: Vector3,
-  RotInflux: Vector3,
-	__RenderPriority: Enum.RenderPriority,
+	* Magnitude: number, 
+	* Roughness: number, 
+	* FadeInTime: number, 
+	* FadeOutTime: number, 
+    * PosInflux: Vector3,
+	* RotInflux: Vector3,
+	* __RenderPriority: Enum.RenderPriority,
 
 ## TLDR, wise... 
 * Magnitude: Master volume for the shake (0 = off, 10 = crazy).
