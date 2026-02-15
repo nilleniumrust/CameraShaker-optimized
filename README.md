@@ -59,7 +59,7 @@ For intuitive research, here's the graph, accumulated by me: [Desmos Demonstrati
 
 **__SpringShakerClassDef**
 | Value | Type | Pointers | Returns | Content |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | __index | Metadata (function) | `self, __indexmap: string` | () -> () | A linked data map that shows overall infastructural data of the class | 
 | Active | Variable (boolean) | `null` | `null` | A boolean that verifies whether if the class is currently active. (:GetState() effects) |
 | Magnitude | Constant (number) | `null` | `null` | Scale factor of the entire shake. Measured as Ampltiude | 
