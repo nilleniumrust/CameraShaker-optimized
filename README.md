@@ -1,5 +1,7 @@
-# CameraShaker-optimized
+# SpringShaker
 A CameraShaker inspired by the ideas of @Sleitnick's RbxCameraShaker, but uses more advanced physics and more stability factors.
+It uses **Semi-Implicit Euler Integrator.**, as of a perlin noise and spring constraint (Hooke's law) mixed general types. 
+
 
 # How to use? 
 **A very easy module, that includes a variety of options to choose from.** 
