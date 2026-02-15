@@ -45,6 +45,14 @@ This code will pull out a small explosion / vibration feeling on your camera for
 
 # Benchmarking & Testing
 For intuitive research, here's the graph, accumulated by me: [Desmos Demonstration](https://www.desmos.com/calculator/r8iharhx3y)
+From maximum stress testing, SpringShaker took around 0.097s max and had a single count of call.
+
+**Flamegraph** 
+Exclusive, Inclusive 6%
+Inclusive Average Size 48 bytes
+Exclusive, Inclusive Alloc Size 6919
+
+* **<code>⚠ NOTE</code>**: I have not done proper benchmarking yet, but it runs smooth on harsh physics.
 
 # API 
 ## [springshaker.lua](https://github.com/nilleniumrust/CameraShaker-optimized/blob/main/springshaker/springshaker.lua)
