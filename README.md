@@ -80,7 +80,7 @@ Before 5 secconds, the code will be triggered and a feel of an Earthquake will b
 | --- | --- | --- |
 | `__SpringShakerClassDef` | `SpringShakerPresets & BuiltIn.__camShakePreset` | A data map array that contains valid information points which inhibits private links and data structure. |
 
-**__SpringShakerClassDef**
+## __SpringShakerClassDef
 | Value | Type |  Content |
 | --- | --- | --- |
 | __index | `Metadata (function)` | Redirects property lookups to the class prototype for memory-efficient method sharing. | 
