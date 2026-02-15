@@ -4,7 +4,7 @@ Source: https://github.com/nilleniumrust/CameraShaker-optimized
 Please read API documentation in the GitHub linked up ^
 
 A CameraShaker that works similarly like Sleitnick's CamShaker, but more modified and upgraded version.
-This CameraShaker, works on a trailed spring system which achieves what a Spring would do.
+This CameraShaker, works on a trailed spring system which achieves what a Spring would do using Semi-Implicit Euler Integrators.
 ]]
 
 --// CLASSES \\--
@@ -29,9 +29,10 @@ local RunService = game:GetService("RunService")
 local __classInstances = {}
 export type __SpringShakerClassDef = typeof(SpringShakerPresets) & BuiltIn.__camShakePreset
 
-SpringShaker._PresetsMap = PresetData
+SpringShaker._PresetsMap = Presets
+SpringShaker._PartnerLoop = false
 
-SpringShakerPresets.__index = function(self, __indexmap)
+SpringShakerPresets.__index = function(self, __indexmap): () -> ()
 	local internal_rawdata = rawget(self, __indexmap)
 	if internal_rawdata ~= nil then 
 		return internal_rawdata 
@@ -85,7 +86,12 @@ function SpringShaker.new(__SpringShakeDefClass: BuiltIn.__camShakePreset): __Sp
 		RotationInfluence = __SpringShakeDefClass.RotationInfluence or __SpringShakeDefClass.RotInflux or Vector3.new(1, 1, 1),
 		PositionInfluence = __SpringShakeDefClass.PositionInfluence or __SpringShakeDefClass.PosInflux or Vector3.new(0, 0, 0),
 	}, SpringShakerPresets)
-
+	
+	self.__JanitorClass:Add(function()
+		RunService:UnbindFromRenderStep(self.__RenderName)
+		self.Active = false
+	end)
+	
 	return self
 end
 
@@ -104,23 +110,20 @@ end
 --- Internal method to bind the shaker update loop to RenderStep.
 --- @param SpringDef __SpringShakerClassDef -- The instance to start rendering.
 function SpringShaker:Start(SpringDef: __SpringShakerClassDef)
-	if self.__running then return end
-	self.__running = true
-
-	RunService:BindToRenderStep(SpringDef.__RenderName, SpringDef.__RenderPriority, function(DeltaTime)
-		if #__classInstances == 0 then 
-			if SpringDef.Janitor then SpringDef.Janitor:Cleanup() end
-			return 
+	if SpringShaker._PartnerLoop then return end 
+	SpringShaker._PartnerLoop = true
+	RunService:BindToRenderStep("PartnerLoop", Enum.RenderPriority.Camera.Value + 1, function(DeltaTime)
+		debug.profilebegin("SpringShakerClass") 
+		if #__classInstances == 0 then
+			RunService:UnbindFromRenderStep("PartnerLoop")
+			SpringShaker._PartnerLoop = false
+			return
 		end
-		CurrentCamera.CFrame *= self:UpdateAll(DeltaTime)
-	end)
 
-	if SpringDef.Janitor then
-		SpringDef.Janitor:Add(function()
-			RunService:UnbindFromRenderStep(SpringDef.__RenderName)
-			SpringDef.__running = false
-		end)
-	end
+		local _Offset = self:UpdateAll(DeltaTime)
+		CurrentCamera.CFrame *= _Offset
+		debug.profileend()
+	end)
 end
 
 --- Forces a specific shaker instance to stop rendering immediately.
@@ -171,11 +174,16 @@ end
 --- @return CFrame -- The combined offset to be applied to the Camera.
 function SpringShaker:UpdateAll(dx: number): CFrame
 	if #__classInstances == 0 then return CFrame.identity end
+	if not dx then return end
+	
 	local __rotdef = Vector3.zero
+	local MAX_OFFSET = 15 -- To not scare amplitude off
 
 	for i = #__classInstances, 1, -1 do 
 		local __SpringShakerClass = __classInstances[i]
 		local __SpringShakeInstance = __SpringShakerClass.__SpringShakeInstance 
+		
+		if not __SpringShakeInstance then continue end
 		local __component = __SpringShakeInstance:Update(dx)
 
 		if __SpringShakeInstance:IsDead() then 
@@ -184,6 +192,10 @@ function SpringShaker:UpdateAll(dx: number): CFrame
 			continue
 		end
 		__rotdef += (__component * __SpringShakeInstance.RotationInfluence)
+	end
+	
+	if __rotdef.Magnitude > MAX_OFFSET then
+		__rotdef = __rotdef.Unit * MAX_OFFSET
 	end
 
 	return CFrame.fromEulerAnglesXYZ(math.rad(__rotdef.X), math.rad(__rotdef.Y), math.rad(__rotdef.Z))
@@ -212,9 +224,12 @@ end
 --- @return function -- Returns a callback function (for legacy compatibility).
 function SpringShaker:ShakeSustained(__SpringShakeInstance: __SpringShakerClassDef): () -> CFrame
 	assert(__SpringShakeInstance, "spring shaker class missing!")
+	
 	__SpringShakeInstance.__SpringShakeInstance = ShakerInstances.new(__SpringShakeInstance)
 	__SpringShakeInstance.__SpringShakeInstance:FadeIn(__SpringShakeInstance.FadeInTime)
+	
 	self:Append(__SpringShakeInstance)
+	
 	self:Start(__SpringShakeInstance)
 	return function() return __SpringShakeInstance.__CFCallback or CFrame.identity end
 end
@@ -225,8 +240,10 @@ end
 function SpringShaker:ShakeOnce(SpringDef: __SpringShakerClassDef, Duration: number)
 	assert(SpringDef, "spring shaker class missing!")
 	SpringDef.__SpringShakeInstance = ShakerInstances.new(SpringDef)
+	
 	self:Append(SpringDef)
 	self:Start(SpringDef)
+	
 	task.delay(Duration or 1, function()
 		if SpringDef and SpringDef.__SpringShakeInstance then
 			SpringDef.__SpringShakeInstance:FadeOut(SpringDef.FadeOutTime or 0.5)
