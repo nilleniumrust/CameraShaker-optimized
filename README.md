@@ -26,7 +26,7 @@ force, matches the S(t) natural frequency of the spring, thus turning into mathe
 
 # Example
 ```lua 
-local springshaker = require(...)
+local springshaker = require(Path.To.SpringShaker)
 local springshaker_test = springshakernew({
 	Magnitude = 7,
 	Roughness = 25,
