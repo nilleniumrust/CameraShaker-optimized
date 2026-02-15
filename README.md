@@ -110,7 +110,7 @@ Before 5 secconds, the code will be triggered and a feel of an Earthquake will b
 | :UpdateAll() | `dx: number` | `CFrame` | Internal core loop that calculates every single combined CFrame of active springs. | **No** | 
 | :Recycle() | `__SpringShakerClass` | `null` | Garbage cleans a specific shaker class and empties memory hash of it | **Optional** |
 | :Append() |`__SpringShakerClass` | `null`| Adds a specific shaker class for the overall memory. | **No** | 
-| :ShakeSustained() | `__SpringShakerClassDef` | () -> CFrame | Starts a shake that lasts until manually stopped | **Yes, after you run .new() or :GetPreset()** |
+| :ShakeSustained() | `__SpringShakerClassDef` | `() -> CFrame` | Starts a shake that lasts until manually stopped | **Yes, after you run .new() or :GetPreset()** |
 | :ShakeOnce() | `__SpringShakeClassDef, Duration: number` | `null` | Plays a shake once, for unhandled situations. | **Yes, after you run .new() or :GetPreset()** |
 * **<code>⚠ NOTE</code>**: This is directly linked to `SpringShakerPresets & BuiltIn.__camShakePreset`. BuiltIn.__camShakePreset has the same export type as this, but the Shaker class gets out-edited more (thus, meaning that it has more artifical adds, that are not in the export type)
 
