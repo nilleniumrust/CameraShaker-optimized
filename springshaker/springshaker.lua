@@ -1,27 +1,35 @@
 --[[
 SpringShaker by kasym77777 
-Forked from sleitnick's CamShaker module. 
+Source: https://github.com/nilleniumrust/CameraShaker-optimized
+Please read API documentation in the GitHub linked up ^
 
-Upgraded/modified version of sleitnick's CamShaker portable, opensource module.
-https://github.com/Sleitnick/RbxCameraShaker
-
-WORK IN PROGRESS - STEADY WORK
+A CameraShaker that works similarly like Sleitnick's CamShaker, but more modified and upgraded version.
+This CameraShaker, works on a trailed spring system which achieves what a Spring would do.
 ]]
 
+--// CLASSES \\--
 local SpringShaker = {}
 local SpringShakerPresets = {}
 
+--// MODULES  \\--
 local BuiltIn = require(script.BuiltIn)
-local Presets = BuiltIn.BuildInPresets
-local PresetConfig = Presets.__presetConfig
-
-local CurrentCamera = workspace.CurrentCamera
-
+local Janitor = require(script.Janitor)
 local ShakerInstances = require(script.ShakerInstances)
+local Presets = require(script.Presets)
+
+--// CONFIGURATION \\--
+local PresetData = BuiltIn.BuildInPresets
+local PresetConfig = PresetData.__presetConfig
+
+--// SERVICES || IMPORTS \\--
+local CurrentCamera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
+--// DECLARATIONS & PRIVATE FUNCTIONS \\--
 local __classInstances = {}
-export type __SpringShakerClassDef  = typeof(SpringShakerPresets) & BuiltIn.__camShakePreset
+export type __SpringShakerClassDef = typeof(SpringShakerPresets) & BuiltIn.__camShakePreset
+
+SpringShaker._PresetsMap = PresetData
 
 SpringShakerPresets.__index = function(self, __indexmap)
 	local internal_rawdata = rawget(self, __indexmap)
@@ -33,7 +41,10 @@ SpringShakerPresets.__index = function(self, __indexmap)
 		[PresetConfig.MAGNITUDE] = function() return self.Magnitude end,
 		[PresetConfig.ROUGHNESS] = function() return self.Roughness end,
 		[PresetConfig.FADEINTIME] = function() return self.FadeInTime end,
-		[PresetConfig.FADEOUTTIME] = function() return self.FadeOutTime end
+		[PresetConfig.FADEOUTTIME] = function() return self.FadeOutTime end,
+		[PresetConfig.DAMPING] = function() return self.Damping end,
+		[PresetConfig.TENSION] = function() return self.Tension end, 
+		[PresetConfig.VELOCITY] = function() return self.Velocity end
 	}
 
 	local __connector = PRESET_CONNECTOR[__indexmap]
@@ -44,142 +55,183 @@ SpringShakerPresets.__index = function(self, __indexmap)
 	return SpringShaker[__indexmap]
 end
 
----@class SpringShaker_Constructor 
---- Creates a brand new Springy camera shaker that will be stored until you will trigger. 
----@param Magnitude number -- The magnitude of the camera shake. 
----@param Roughness number -- The roughness of the camera shake.
----@param FadeInTime number -- At what time, should the shake be started. 
----@param PosInflux Vector3 -- Amount of Vector3 position that affects the Camera shake sequence
----@param RotInflux Vector3 -- Amount of (Vector3 -> CFrame) rotation that affects the Camera shake sequence
----@param FadeOutTime number -- At what time, should the shake be stopped.
----@param __RenderPriority -- used for the RunService:BindToRenderStep() function. 
----@return __SpringShakerClass -- returns an important table data which you can use with term functions
-function SpringShaker.new(Magnitude: number, PosInflux: Vector3, RotInflux: Vector3, Roughness: number, FadeInTime: number, FadeOutTime: number, __RenderPriority: Enum.RenderPriority): __SpringShakerClassDef
-	assert(RunService:IsClient(), "Cannot be run on server for complicated terms. Only can be applied on client.")
-	assert(typeof(PosInflux) == "Vector3" and typeof(RotInflux) == "Vector3", "in vector mathematics any types of given to posInflux and rotInflux are unacceptable, therefore they cannot be correctly converted.")
+--// FUNCTIONS \\--
 
-	local __SpringShakerClass: BuiltIn.__camShakePreset = setmetatable({
+--- Creates a brand new Springy camera shaker instance.
+--- @param __SpringShakeDefClass table -- The configuration table for the shaker.
+--- @return __SpringShakerClassDef -- Returns the shaker class object.
+function SpringShaker.new(__SpringShakeDefClass: BuiltIn.__camShakePreset): __SpringShakerClassDef
+	assert(RunService:IsClient(), "SpringShaker must be run on the client.")
+	assert(__SpringShakeDefClass, "SpringShaker must have a valid table.")
+	assert(typeof(__SpringShakeDefClass) == "table", "SpringShaker.new expects a table configuration.")
+
+	local __Magnitude = math.clamp(__SpringShakeDefClass.Magnitude or 0.4, 0, 10^5)
+	assert(__Magnitude < 10^5, "Magnitude is too high!")
+
+	local self = setmetatable({
 		Active = true,
-		Magnitude = Magnitude or 0.4, 
-
-		Roughness = Roughness or 0.2, 
-		FadeInTime = FadeInTime or 0.1, 
-		FadeOutTime = FadeOutTime or 0.5,
-		
-		RotInflux = RotInflux or Vector3.zero, 
-		PosInflux = PosInflux or Vector3.zero, 
-		
+		Magnitude = __Magnitude,
+		Roughness = math.clamp(__SpringShakeDefClass.Roughness or 0.2, 0, 500),
+		FadeInTime = __SpringShakeDefClass.FadeInTime or 0.1,
+		FadeOutTime = __SpringShakeDefClass.FadeOutTime or 0.5,
+		Tension = math.clamp(__SpringShakeDefClass.Tension or 150, 0, 1500),
+		Damping = __SpringShakeDefClass.Damping or __SpringShakeDefClass.Damper or 10, 
+		Damper = __SpringShakeDefClass.Damping or __SpringShakeDefClass.Damper or 10,
+		__JanitorClass = Janitor.new(), 
+		Velocity = __SpringShakeDefClass.Velocity or Vector3.zero,
+		__RenderName = __SpringShakeDefClass.__RenderName or ("SpringShaker_" .. game:GetService("HttpService"):GenerateGUID(false)),
+		__RenderPriority = __SpringShakeDefClass.__RenderPriority or (Enum.RenderPriority.Camera.Value + 1),
 		__Callback = nil,
-		__RenderPriority = __RenderPriority or Enum.RenderPriority.Camera.Value, 
-		__RenderName = "SpringShaker",
-	}, SpringShakerPresets) 
+		RotationInfluence = __SpringShakeDefClass.RotationInfluence or __SpringShakeDefClass.RotInflux or Vector3.new(1, 1, 1),
+		PositionInfluence = __SpringShakeDefClass.PositionInfluence or __SpringShakeDefClass.PosInflux or Vector3.new(0, 0, 0),
+	}, SpringShakerPresets)
 
-	table.insert(__classInstances, __SpringShakerClass)
-	return __SpringShakerClass
+	return self
 end
 
+--- Retrieves a preset by name and returns a new Shaker instance using that preset's config.
+--- @param PresetName string -- The key name of the preset in the Presets module.
+--- @return __SpringShakerClassDef? -- Returns the instance, or nil if not found.
+function SpringShaker:GetPreset(PresetName: string): __SpringShakerClassDef
+	local __presetAnnotator = SpringShaker._PresetsMap[PresetName]
+	if not __presetAnnotator then 
+		warn("Preset is null or invalid.")
+		return
+	end
+	return self.new(__presetAnnotator)
+end
+
+--- Internal method to bind the shaker update loop to RenderStep.
+--- @param SpringDef __SpringShakerClassDef -- The instance to start rendering.
 function SpringShaker:Start(SpringDef: __SpringShakerClassDef)
-	assert(SpringDef, "SpringDef must be of type table")
-	assert(SpringDef.Active, "SpringDef is not currently active!")
-	
 	if self.__running then return end
 	self.__running = true
-	
-	SpringDef.__Callback = RunService:BindToRenderStep(SpringDef.__RenderName, SpringDef.__RenderPriority, function(DeltaTime)
-		print(#__classInstances)
-		
+
+	RunService:BindToRenderStep(SpringDef.__RenderName, SpringDef.__RenderPriority, function(DeltaTime)
 		if #__classInstances == 0 then 
-			RunService:UnbindFromRenderStep(SpringDef.__RenderName)
-			self.__running = not self.__running
-			return
+			if SpringDef.Janitor then SpringDef.Janitor:Cleanup() end
+			return 
 		end
 		CurrentCamera.CFrame *= self:UpdateAll(DeltaTime)
 	end)
-end
 
-function SpringShaker:Halt(SpringDef: __SpringShakerClassDef)
-	assert(SpringDef, "SpringDef must be of type table")
-	assert(SpringDef.Active, "SpringDef is not currently active!")
-	
-	if SpringDef.__Callback then 
-		RunService:UnbindFromRenderStep(SpringDef.__RenderName)
-		SpringDef.__Callback = nil
+	if SpringDef.Janitor then
+		SpringDef.Janitor:Add(function()
+			RunService:UnbindFromRenderStep(SpringDef.__RenderName)
+			SpringDef.__running = false
+		end)
 	end
 end
 
+--- Forces a specific shaker instance to stop rendering immediately.
+--- @param SpringDef __SpringShakerClassDef -- The instance to halt.
+function SpringShaker:Halt(SpringDef: __SpringShakerClassDef)
+	assert(SpringDef, "SpringDef must be of type table")
+	if SpringDef.__Callback or SpringDef.__RenderName then 
+		RunService:UnbindFromRenderStep(SpringDef.__RenderName)
+	end
+end
 
+--- Iterates through all active shakers and triggers their FadeOut.
+--- @param FadeOutTime number? -- Optional time to override the preset's FadeOutTime.
+function SpringShaker:HaltAll(FadeOutTime: number)
+	for _, shaker in ipairs(__classInstances) do
+		if shaker.__SpringShakeInstance then
+			shaker.__SpringShakeInstance:FadeOut(FadeOutTime or 0.5)
+		end
+	end
+end
+
+--- Immediately stops all rendering, cleans up all memory, and clears the instance list.
+function SpringShaker:RecycleAll()
+	if #__classInstances > 0 then
+		RunService:UnbindFromRenderStep(__classInstances[1].__RenderName)
+	end
+	for i = #__classInstances, 1, -1 do
+		self:Recycle(__classInstances[i])
+		table.remove(__classInstances, i)
+	end
+	table.clear(__classInstances)
+	self.__running = false
+end
+
+--- Fades out all active shakers based on their current state.
+--- @param Time number? -- Optional override for the FadeOut duration.
+function SpringShaker:HaltDurationWise(Time: number)
+	for _, shakerPreset in ipairs(__classInstances) do 
+		local mathInstance = shakerPreset.__SpringShakeInstance 
+		if mathInstance and not mathInstance:IsFadingOut() then 
+			mathInstance:FadeOut(Time or shakerPreset.FadeOutTime)
+		end
+	end
+end
+
+--- Internal core loop that calculates the combined CFrame of all active springs.
+--- @param dx number -- The DeltaTime from RenderStep.
+--- @return CFrame -- The combined offset to be applied to the Camera.
 function SpringShaker:UpdateAll(dx: number): CFrame
 	if #__classInstances == 0 then return CFrame.identity end
-	
-	local __posdef = Vector3.zero 
 	local __rotdef = Vector3.zero
 
 	for i = #__classInstances, 1, -1 do 
 		local __SpringShakerClass = __classInstances[i]
 		local __SpringShakeInstance = __SpringShakerClass.__SpringShakeInstance 
+		local __component = __SpringShakeInstance:Update(dx)
 
-		local currentState = __SpringShakeInstance:GetState()
-
-		if currentState == BuiltIn.BuildInPresets.__camShakeStates.Inactive or __SpringShakeInstance:IsDead() then 
-			self:Recycle(__SpringShakeInstance)
+		if __SpringShakeInstance:IsDead() then 
+			self:Recycle(__SpringShakerClass)
 			table.remove(__classInstances, i) 
 			continue
 		end
-
-		local __componentFunction = __SpringShakeInstance:Update(dx)
-		__posdef += (__componentFunction * __SpringShakeInstance.PositionInfluence)
-		__rotdef += (__componentFunction * __SpringShakeInstance.RotationInfluence)
+		__rotdef += (__component * __SpringShakeInstance.RotationInfluence)
 	end
 
-	local sum = CFrame.Angles(0, math.rad(__rotdef.Y), 0) * CFrame.Angles(math.rad(__rotdef.X), 0, math.rad(__rotdef.Z))
-	return sum
+	return CFrame.fromEulerAnglesXYZ(math.rad(__rotdef.X), math.rad(__rotdef.Y), math.rad(__rotdef.Z))
 end
 
-function SpringShaker:Recycle(__SpringShakeInstance: __SpringShakerClassDef)
-	assert(__SpringShakeInstance, "value does not exist or not found")
-
-	if __SpringShakeInstance.__Callback then 
-		__SpringShakeInstance.__Callback:UnbindToRenderStep()
-		__SpringShakeInstance.__Callback = nil
+--- Cleans up an individual shaker instance and its Janitor class.
+--- @param __SpringShakerClass any -- The specific instance to recycle.
+function SpringShaker:Recycle(__SpringShakerClass)
+	if not __SpringShakerClass then return end
+	if __SpringShakerClass.__JanitorClass then
+		__SpringShakerClass.__JanitorClass:Cleanup()
 	end
-	
-	__SpringShakeInstance.SpringShakeInstance = nil
-	table.clear(__SpringShakeInstance)
-	return
+	__SpringShakerClass.__SpringShakeInstance = nil
+	table.clear(__SpringShakerClass)
 end
 
+--- Adds a shaker instance to the active stack.
+--- @param __SpringShakeInstance __SpringShakerClassDef -- The instance to append.
 function SpringShaker:Append(__SpringShakeInstance: __SpringShakerClassDef)
-	assert(__SpringShakeInstance, "__SpringShakeInstance does not exist or not found")
+	assert(__SpringShakeInstance, "__SpringShakeInstance not found")
 	table.insert(__classInstances, __SpringShakeInstance)
 end
 
-function SpringShaker:Shake(__SpringShakeInstance: __SpringShakerClassDef): () -> CFrame
-	assert(__SpringShakeInstance, "spring shaker class does not exist or was not given!")
+--- Starts a shaker that lasts until manually stopped.
+--- @param __SpringShakeInstance __SpringShakerClassDef -- The instance to use.
+--- @return function -- Returns a callback function (for legacy compatibility).
+function SpringShaker:ShakeSustained(__SpringShakeInstance: __SpringShakerClassDef): () -> CFrame
+	assert(__SpringShakeInstance, "spring shaker class missing!")
 	__SpringShakeInstance.__SpringShakeInstance = ShakerInstances.new(__SpringShakeInstance)
 	__SpringShakeInstance.__SpringShakeInstance:FadeIn(__SpringShakeInstance.FadeInTime)
-	
 	self:Append(__SpringShakeInstance)
 	self:Start(__SpringShakeInstance)
-	
-	
-	return function() 
-		return __SpringShakeInstance.__CFCallback or CFrame.identity
-	end
+	return function() return __SpringShakeInstance.__CFCallback or CFrame.identity end
 end
 
+--- Plays a shaker once for a specific duration.
+--- @param SpringDef __SpringShakerClassDef -- The instance configuration.
+--- @param Duration number? -- How long the shake should stay active before fading out.
 function SpringShaker:ShakeOnce(SpringDef: __SpringShakerClassDef, Duration: number)
-	assert(SpringDef, "spring shaker class does not exist or was not given!")
+	assert(SpringDef, "spring shaker class missing!")
 	SpringDef.__SpringShakeInstance = ShakerInstances.new(SpringDef)
 	self:Append(SpringDef)
 	self:Start(SpringDef)
-	
 	task.delay(Duration or 1, function()
-		if SpringDef then
-			print(SpringDef)
-			SpringDef.__SpringShakeInstance:FadeOut(SpringDef.__SpringShakeInstance.FadeOutTime or 0.5)
+		if SpringDef and SpringDef.__SpringShakeInstance then
+			SpringDef.__SpringShakeInstance:FadeOut(SpringDef.FadeOutTime or 0.5)
 		end
 	end)
 end
-
 
 return SpringShaker
