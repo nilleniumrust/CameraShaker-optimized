@@ -42,6 +42,17 @@ springshaker:ShakeOnce(springshaker_test, 2)
 ```
 This code will pull out a small explosion / vibration feeling on your camera for around two seconds. 
 
+```lua
+local springshaker = require(Path.To.SpringShaker)
+local springshaker_preset = springshaker:GetPreset("Earthquake")
+
+springshaker:Shake(springshaker_preset)
+task.delay(5, function()
+   springshaker:HaltDurationWise(1)
+end)
+```
+Before 5 secconds, the code will be triggered and a feel of an Earthquake will be presented through your camera, then after this, the spring dies down, loosing momentum in 1 second.
+
 # Modules & Libraries used 
 [Janitor v1.17.0](https://github.com/howmanysmall/Janitor/tree/main) by @howmanysmall
 
@@ -84,6 +95,7 @@ Exclusive, Inclusive Alloc Size 6919
 | RotationalInfluence | Vector3 | It is a pin-point translator (1D) to (3D), which by per-axis, allows you to constrain the spring mathematics to edit at what direction you would like it to shake. | 
 
 
+
 | Functions | Parameters | Returns | Description | Recommended to run? |
 | --- | --- | --- | --- | --- |
 | .new() | `BuiltIn._camShakePreset` | `__SpringShakerClassDef` | Builds a new constructor class and returns a valid mathematical table, that can be used by general functions ahead.| **Yes (if not using :GetPreset()** |
@@ -98,6 +110,7 @@ Exclusive, Inclusive Alloc Size 6919
 | :Append() |`__SpringShakerClass` | `null`| Adds a specific shaker class for the overall memory. | **No** | 
 | :ShakeSustained() | `__SpringShakerClassDef` | () -> CFrame | Starts a shake that lasts until manually stopped | **Yes, after you run .new() or :GetPreset()** |
 | :ShakeOnce() | `__SpringShakeClassDef, Duration: number` | `null` | Plays a shake once, for unhandled situations. | **Yes, after you run .new() or :GetPreset()** |
+* **<code>⚠ NOTE</code>**: This is directly linked to `SpringShakerPresets & BuiltIn.__camShakePreset`. BuiltIn.__camShakePreset has the same export type as this, but the Shaker class gets out-edited more (thus, meaning that it has more artifical adds, that are not in the export type)
 
 ## [shakerinstances.lua](https://github.com/nilleniumrust/CameraShaker-optimized/blob/main/springshaker/shakerinstances.lua)
 ### COSNTRUCTOR (ShakerInstances) 
@@ -105,7 +118,7 @@ Exclusive, Inclusive Alloc Size 6919
 
 | Functions | Parameters | Description |
 | --- | --- | --- |
-| `.new()` | __SpringShakerDefClass | Inherits the same __SpringShakerClassDef as its table, but more modified and a stable mathematics version. It is then to be given to the main module, for purpose and security. |
+| `.new()` | `__SpringShakerDefClass` | Inherits the same __SpringShakerClassDef as its table, but more modified and a stable mathematics version. It is then to be given to the main module, for purpose and security. |
 | `:Update()` | dx: number | The main handler of the connected springs in general physics and mathematics. | 
 | `:FadeOut()` | Time: number | The time to it takes to calm down and return to zero in overall. Direct connection to E(t) frequency. |
 | `:FadeIn()` | Time: number | The amount of time it takes to reach the full magnitude (amplitude) of the spring. | 
@@ -116,5 +129,26 @@ Exclusive, Inclusive Alloc Size 6919
 | `:IsDead()` | `null` | Logic gate that returns whether if the selected spring shaker class is dead in instance |
 | `:GetState()` | `null` | Returns integer values that are designated to 'Inactive', 'Active' and etc. |
 
+### MISCELLANIOUS 
 
+| State | Values | 
+| --- | --- |
+| `Reserved` | -1 | 
+| `Inactive` | 0 |
+| `Active` | 1 | 
+| `FadeInProgress` | 2 |
+| `FadeOutProgress` | 3 |
+
+| Preset | Description | 
+| --- | --- | 
+| Explosion | Violent & Rough. A massive initial shock that decays into a heavy rumble. |
+| Landmine | Sharp & Snappy. A high-tension "sting" that stabilizes almost instantly. | 
+| Earthquake | Heavy & Rolling. Low-frequency swaying that feels like the ground is liquefying. |
+| Resonance | A slow build-up of energy that feels like a rhythmic wobble. |
+| Bounce | A soft, fluid recoil with minimal roughness. |
+| Vibration | A very tiny change of a hum in the player's camera. | 
+| ExplosiveBullet | A very fast, sharp crack that feels like a nearby hit. |
+
+* **<code>⚠ NOTE</code>**: You can use these basic templates off, when using :GetPreset(), as followed in the second code template.
+* **<code>⚠ NOTE</code>**: To be sure, your :GetPreset() has to be a valid table that exists in this Presets array module.
 
