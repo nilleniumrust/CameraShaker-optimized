@@ -1,7 +1,21 @@
 
 <img width="1080" height="720" alt="springshaker-logo2(1)" src="https://github.com/user-attachments/assets/16b0b721-119f-49f6-8184-118c1f2dd850"/>
+<a href="https://nilleniumrust.github.io/springshaker/">
+<img src="https://img.shields.io/badge/Docs-View_Site-brightgreen?style=for-the-badge&logo=googledocs&logoColor=white&labelColor=222222" alt="Documentation"></a>
+
+<a href="https://wally.run/package/nilleniumrust/springshaker">
+<img src="https://img.shields.io/badge/Wally-v1.1.1-00A2FF?style=for-the-badge&logo=roblox&logoColor=white&labelColor=222222" alt="Wally Version"></a>
+
+<a href="https://github.com/nilleniumrust/springshaker/releases">
+<img src="https://img.shields.io/github/v/release/nilleniumrust/springshaker?style=for-the-badge&logo=github&logoColor=white&labelColor=222222&color=orange" alt="Releases"></a>
+
+<a href="https://create.roblox.com/store/asset/72358969628018/SpringShaker">
+<img src="https://img.shields.io/badge/Roblox-Marketplace-00A2FF?style=for-the-badge&logo=roblox&logoColor=white&labelColor=222222" alt="Roblox Marketplace"></a>
+
 
 # SpringShaker
+
+![License](https://img.shields.io/github/license/nilleniumrust/springshaker) ![Size](https://img.shields.io/github/languages/code-size/nilleniumrust/springshaker)
 
 
 > A physics-based camera shaker for Roblox built on a damped harmonic oscillator — giving shakes real weight, momentum, and natural decay.
