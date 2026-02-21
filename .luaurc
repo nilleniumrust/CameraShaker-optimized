@@ -1,0 +1,6 @@
+{
+    "languageMode": "nonstrict",
+    "aliases": {
+        "Source": "./src"
+    }
+}
