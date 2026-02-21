@@ -1,0 +1,15 @@
+{
+  "name": "SpringShaker",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "src": {
+        "$path": "src",
+        "Packages": {
+          "$path": "src/Packages"
+        }
+      }
+    }
+  }
+}
