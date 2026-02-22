@@ -1,4 +1,3 @@
-
 <img width="1080" height="720" alt="springshaker-logo2(1)" src="https://github.com/user-attachments/assets/16b0b721-119f-49f6-8184-118c1f2dd850"/>
 <a href="https://nilleniumrust.github.io/SpringShaker/">
 <img src="https://img.shields.io/badge/Docs-View_Site-brightgreen?style=for-the-badge&logo=googledocs&logoColor=white&labelColor=222222" alt="Documentation"></a>
