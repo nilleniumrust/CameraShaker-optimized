@@ -14,7 +14,7 @@
 
 # SpringShaker
 
-![License](https://img.shields.io/github/license/nilleniumrust/springshaker) ![Size](https://img.shields.io/github/languages/code-size/nilleniumrust/springshaker) ![Docs Deployment](https://github.com/nilleniumrust/springshaker/actions/workflows/pages/pages-build-deployment/badge.svg)
+![License](https://img.shields.io/github/license/nilleniumrust/springshaker) ![Size](https://img.shields.io/github/languages/code-size/nilleniumrust/springshaker) ![Docs Deployment](https://github.com/nilleniumrust/springshaker/actions/workflows/pages/pages-build-deployment/badge.svg) ![Latest Downloads](https://img.shields.io/github/downloads/nilleniumrust/springshaker/latest/total) ![Open Issues](https://img.shields.io/github/issues/nilleniumrust/springshaker)
 
 
 > A physics-based camera shaker for Roblox built on a damped harmonic oscillator — giving shakes real weight, momentum, and natural decay.
