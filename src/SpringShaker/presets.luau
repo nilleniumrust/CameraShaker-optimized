@@ -12,112 +12,111 @@ PresetName = {
 	Critical damping threshold: Damping ≈ 2 * sqrt(Tension)
 	e.g. Tension=150 → ideal Damping ≈ 24.5, so 22–28 is a good cinematic range
 	Going below this gives a subtle ring/bounce; going above kills motion too fast.
-	RotationInfluence should stay small (0.2–1.5) for cinematic subtlety.
+	RotationInfluence should stay small (-1 to 1) for cinematic subtlety.
 	Roughness above ~10 starts feeling artificial/jittery rather than physical.
 }
 To run it, you just have to use the function of :GetPreset() and enter a valid Preset (string).
 ]]
 
 local Presets = {
-
-	-- A distant, heavy detonation. Slow low-frequency roll felt through the ground.
+	-- A distant, heavy detonation. Head snaps back, slight leftward torque from shockwave.
 	Explosion = {
-		Magnitude = 3.5,
-		Roughness = 3.2,
+		Magnitude = 8,
+		Roughness = 25,
 		FadeInTime = 0,
-		FadeOutTime = 1.8,
-		Tension = 160,
-		Damping = 22, -- Slightly underdamped (crit ~25) for a subtle tail ring
-		RotationInfluence = Vector3.new(1.2, 0.5, 0.3),
+		FadeOutTime = 1.2,
+		Tension = 400,
+		Damping = 45,
+		RotationInfluence = Vector3.new(-0.8, -0.25, 0.4),
 	},
-
-	-- A sharp, close-range blast underfoot. Snappy and disorienting but brief.
+	-- Underfoot blast. Sharp downward snap then chaotic recovery.
 	Landmine = {
-		Magnitude = 2.2,
-		Roughness = 7.5,
+		Magnitude = 3,
+		Roughness = 30,
 		FadeInTime = 0,
-		FadeOutTime = 0.55,
-		Tension = 420,
-		Damping = 48, -- Near-critical (crit ~41) for a fast, clean stop
-		RotationInfluence = Vector3.new(1.0, 0.4, 0.2),
+		FadeOutTime = 0.4,
+		Tension = 600,
+		Damping = 60,
+		RotationInfluence = Vector3.new(-0.5, 0.15, -0.2),
 	},
-
-	-- A slow, building ground tremor. Low and heavy, weighted toward vertical sway.
+	-- Rolling ground tremor. Z dominant, asymmetric pitch for organic feel.
 	Earthquake = {
-		Magnitude = 1.4,
-		Roughness = 2.8,
+		Magnitude = 6,
+		Roughness = 6.4,
 		FadeInTime = 2.5,
 		FadeOutTime = 9.0,
-		Tension = 280,
-		Damping = 58, -- Overdamped (crit ~33) — kills resonance risk entirely
-		RotationInfluence = Vector3.new(0.6, 1.2, 0.5),
+		Tension = 400,
+		RotationInfluence = Vector3.new(-0.2, -0.1, 1),
 	},
-
-	-- A micro-impact. Fast tick with minimal arc, like a rifle round hitting nearby cover.
+	-- Nearby explosive impact. Sharp upward flinch, slight left bias.
 	ExplosiveBullet = {
-		Magnitude = 0.9,
-		Roughness = 9.0,
+		Magnitude = 1.5,
+		Roughness = 45,
 		FadeInTime = 0,
-		FadeOutTime = 0.18,
+		FadeOutTime = 0.2,
 		Tension = 800,
-		Damping = 72, -- Near-critical (crit ~57) — very tight, no ring
-		RotationInfluence = Vector3.new(0.8, 0.25, 0.1),
+		Damping = 70,
+		RotationInfluence = Vector3.new(-0.35, -0.15, 0.1),
 	},
-
-	-- Mechanical rumble, like an engine or generator close by. Tight and even.
+	-- Mechanical vibration. Symmetric, no dominant axis.
 	Vibration = {
-		Magnitude = 0.25,
-		Roughness = 18.0,
-		FadeInTime = 1.2,
-		FadeOutTime = 1.2,
-		Tension = 950,
-		Damping = 95, -- Overdamped (crit ~62) — intentionally stiff for mechanical feel
-		RotationInfluence = Vector3.new(0.08, 0.06, 0.04),
+		Magnitude = 0.2,
+		Roughness = 50,
+		FadeInTime = 1.0,
+		FadeOutTime = 1.0,
+		Tension = 1000,
+		Damping = 80,
+		RotationInfluence = Vector3.new(0.08, -0.05, 0.1),
 	},
-
-	-- A single heavy footstep or landing impact. Vertical dip with a light roll.
+	-- Heavy landing. Nose dips forward on impact, slight rightward stumble.
 	Bounce = {
-		Magnitude = 1.6,
-		Roughness = 2.5,
+		Magnitude = 2.0,
+		Roughness = 5,
 		FadeInTime = 0,
-		FadeOutTime = 0.7,
-		Tension = 220,
-		Damping = 20, -- Slightly underdamped (crit ~30) for a natural rebound feel
-		RotationInfluence = Vector3.new(1.4, 0.1, 0.3),
+		FadeOutTime = 0.8,
+		Tension = 150,
+		Damping = 12,
+		RotationInfluence = Vector3.new(-0.5, 0.1, -0.2),
 	},
-
-	-- A sustained, building environmental shake. Like something massive approaching.
+	-- Something massive approaching. Builds slowly, multi-axis swell.
 	Resonance = {
-		Magnitude = 1.8,
-		Roughness = 4.5,
-		FadeInTime = 3.5,
-		FadeOutTime = 4.0,
-		Tension = 300,
-		Damping = 52, -- Slightly overdamped (crit ~35) — controlled swell, no spin risk
-		RotationInfluence = Vector3.new(0.9, 0.8, 0.6),
+		Magnitude = 5.0,
+		Roughness = 12,
+		FadeInTime = 4.0,
+		FadeOutTime = 2.0,
+		Tension = 200,
+		Damping = 15,
+		RotationInfluence = Vector3.new(-0.4, -0.2, 0.5),
 	},
-
-	-- A light environmental tremor, like a distant vehicle or structural stress.
+	-- Distant vehicle or structural stress. Subtle, low and persistent.
 	Rumble = {
-		Magnitude = 0.6,
-		Roughness = 3.8,
+		Magnitude = 1.5,
+		Roughness = 8,
 		FadeInTime = 1.8,
 		FadeOutTime = 3.5,
-		Tension = 200,
-		Damping = 34, -- Near-critical (crit ~28) for a smooth, organic sway
-		RotationInfluence = Vector3.new(0.4, 0.6, 0.3),
+		Tension = 180,
+		Damping = 18,
+		RotationInfluence = Vector3.new(-0.15, 0.1, 0.2),
 	},
-
-	-- A single sharp hit to the player. Punchy recoil with a fast return.
+	-- Sharp hit to the player. Head snaps back and slightly right.
 	Impact = {
-		Magnitude = 1.8,
-		Roughness = 5.0,
+		Magnitude = 3.5,
+		Roughness = 20,
 		FadeInTime = 0,
 		FadeOutTime = 0.35,
 		Tension = 500,
-		Damping = 50, -- Near-critical (crit ~45) — snappy without buzzing
-		RotationInfluence = Vector3.new(1.1, 0.3, 0.15),
+		Damping = 50,
+		RotationInfluence = Vector3.new(-0.5, 0.25, -0.15),
+	},
+	-- M2 Browning recoil. Muzzle climbs, slight rightward torque from bolt.
+	M2Recoil = {
+		Magnitude = 1.2,
+		Roughness = 30,
+		FadeInTime = 0.04,
+		FadeOutTime = 0.25,
+		Tension = 800,
+		Damping = 65,
+		RotationInfluence = Vector3.new(-0.35, 0.08, -0.05),
 	},
 }
-
 return Presets
