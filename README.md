@@ -2,7 +2,7 @@
 <a href="https://nilleniumrust.github.io/SpringShaker/">
 <img src="https://img.shields.io/badge/Docs-View_Site-brightgreen?style=for-the-badge&logo=googledocs&logoColor=white&labelColor=222222" alt="Documentation"></a>
 
-<a href="https://create.roblox.com/store/asset/92060030438848">
+<a href="https://devforum.roblox.com/t/v112-springshaker-easy-camera-shaking-manipulation-using-springs/4379144">
 <img src="https://img.shields.io/badge/Devforum-Post-00A2FF?style=for-the-badge&logo=roblox&logoColor=white&labelColor=222222&color=red" alt="Devforum Post"></a>
 
 <a href="https://wally.run/package/nilleniumrust/springshaker">
